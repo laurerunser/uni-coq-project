@@ -143,11 +143,15 @@ Module Regexps (Letter : FiniteOrderedType).
 
  Lemma deriv_void w : Void // w = Void.
  Proof.
- Admitted.
+  induction w; auto.
+ Qed.
 
  Lemma deriv_epsilon w : In (Epsilon // w) [Void; Epsilon].
  Proof.
- Admitted.
+  induction w.
+  - simpl. right. left. reflexivity.
+  - simpl in *. destruct IHw; left; rewrite deriv_void; reflexivity.
+ Qed.
 
  Lemma deriv_letter a w :
   In (Letter a // w) [Void; Epsilon; Letter a].
@@ -204,75 +208,98 @@ Module Regexps (Letter : FiniteOrderedType).
  Proof. intros r r' E w w' <-. unfold matching. now rewrite E. Qed.
 
  Lemma or_comm r s : Or r s === Or s r.
- Proof.
- Admitted.
+ Proof. firstorder.
+ Qed.
 
  Lemma or_assoc r s t : Or (Or r s) t === Or r (Or s t).
- Proof.
- Admitted.
+ Proof. firstorder.
+ Qed.
 
  Lemma or_idem r : Or r r === r.
- Proof.
- Admitted.
+ Proof. firstorder.
+ Qed.
+
 
  Lemma or_void_l r : Or Void r === r.
- Proof.
- Admitted.
+ Proof. firstorder.
+ Qed.
 
  Lemma or_void_r r : Or r Void === r.
- Proof.
- Admitted.
+ Proof. firstorder.
+Qed.
 
  Lemma and_comm r s : And r s === And s r.
- Proof.
- Admitted.
+ Proof. firstorder.
+ Qed.
 
  Lemma and_assoc r s t : And (And r s) t === And r (And s t).
- Proof.
- Admitted.
+ Proof. firstorder.
+ Qed.
 
  Lemma and_idem r : And r r === r.
- Proof.
- Admitted.
+ Proof. firstorder.
+ Qed.
 
  Lemma cat_void_l r : Cat Void r === Void.
- Proof.
- Admitted.
+ Proof. firstorder.
+ Qed.
 
  Lemma cat_void_r r : Cat r Void === Void.
- Proof.
- Admitted.
+ Proof. firstorder.
+ Qed.
 
  Lemma cat_eps_l r : Cat Epsilon r === r.
- Proof.
- Admitted.
+ Proof. 
+  split; intros; simpl in *.
+  - apply Lang.cat_eps_l with (L:=lang r) in H. apply H.
+  - apply Lang.cat_eps_l. apply H.
+ Qed.
 
  Lemma cat_eps_r r : Cat r Epsilon === r.
- Proof.
- Admitted.
+ Proof. 
+  split; intros; simpl in *.
+  - apply Lang.cat_eps_r with (L:= lang r) in H. apply H.
+  - apply Lang.cat_eps_r. apply H.
+ Qed.
 
  Lemma cat_assoc r s t : Cat (Cat r s ) t === Cat r (Cat s t).
  Proof.
- Admitted.
+  split; intros; simpl in *; apply Lang.cat_assoc in H; apply H.
+ Qed.
 
  Lemma star_is_or r : Star r === Or Epsilon (Cat r (Star r)).
  Proof.
- Admitted.
+  split; intros; simpl in *.
+  - apply Lang.star_eqn. apply H.
+  - apply Lang.star_eqn in H. apply H.
+ Qed.
 
  Lemma star_void : Star Void === Epsilon.
  Proof.
- Admitted.
+  split; intros; simpl in *.
+  - apply Lang.star_void. apply H.
+  - apply Lang.star_void in H. apply H.
+ Qed.
 
  Lemma star_epsilon : Star Epsilon === Epsilon.
  Proof.
- Admitted.
+    split; intros; simpl in *.
+  - apply Lang.star_eps. apply H.
+  - apply Lang.star_eps in H. apply H.
+ Qed.
 
  Lemma star_star r : Star (Star r) === Star r.
  Proof.
- Admitted.
+    split; intros; simpl in *.
+  - apply Lang.star_star. apply H.
+  - apply Lang.star_star in H. apply H.
+ Qed.
 
  Lemma cat_star r : Cat (Star r) (Star r) === Star r.
  Proof.
- Admitted.
+    split; intros; simpl in *.
+  - apply Lang.cat_star. apply H.
+  - apply Lang.cat_star in H. apply H.
+ Qed.
 
 End Regexps.
