@@ -136,7 +136,10 @@ Module Regexps (Letter : FiniteOrderedType).
 
  Lemma deriv_ok' r w w' : lang (r//w) w' <-> lang r (w++w').
  Proof.
- Admitted.
+  split; intros.
+  - induction w; firstorder. apply deriv_ok. apply H.
+  - induction w; firstorder. apply deriv_ok in H. apply H.
+ Qed.
 
 (** ** Matching : is a word in the language of a regexp ? *)
 
@@ -172,7 +175,22 @@ Module Regexps (Letter : FiniteOrderedType).
  Lemma deriv_letter a w :
   In (Letter a // w) [Void; Epsilon; Letter a].
  Proof.
- Admitted.
+  induction w.
+  - simpl. right. right. left. reflexivity.
+  - simpl in *. 
+    case LetterB.eqb_spec.
+    + intros. firstorder.
+      * induction w. (* TO SIMPLIFY : 4 times the same code! *)
+        ++ simpl. right. left. reflexivity.
+        ++ simpl. left. rewrite deriv_void. reflexivity.
+      * induction w.
+        ++ simpl. right. left. reflexivity.
+        ++ simpl. left. rewrite deriv_void. reflexivity.
+      * induction w.
+        ++ simpl. right. left. reflexivity.
+        ++ simpl. left. rewrite deriv_void. reflexivity.
+    + intros. left. rewrite deriv_void. reflexivity.
+  Qed.
 
  Lemma deriv_or r s w :
   (Or r s) // w = Or (r//w) (s//w).
