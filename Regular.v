@@ -163,7 +163,12 @@ Qed.
 
  Lemma matching_ok r w : matching r w = true <-> lang r w.
  Proof.
- Admitted.
+  split; intros.
+  - unfold matching in H. apply nullable_ok in H. apply deriv_ok' in H. 
+    rewrite app_nil_r in H. apply H.
+  - unfold matching. apply nullable_ok. apply deriv_ok'. rewrite app_nil_r.
+    apply H.
+ Qed.
 
  (** We can now prove that being in [lang r] is decidable *)
 
