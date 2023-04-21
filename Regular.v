@@ -191,7 +191,7 @@ Qed.
   In (Letter a // w) [Void; Epsilon; Letter a].
  Proof.
   destruct w; simpl in *; firstorder; case LetterB.eqb_spec; firstorder.
-  - induction w; simpl in *; firstorder; rewrite deriv_void; firstorder.
+  - destruct (deriv_epsilon w); [left | right; left]; firstorder.
   - rewrite deriv_void. firstorder.
   Qed.
 
