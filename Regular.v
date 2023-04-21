@@ -163,11 +163,7 @@ Qed.
 
  Lemma matching_ok r w : matching r w = true <-> lang r w.
  Proof.
-  split; intros.
-  - unfold matching in H. apply nullable_ok in H. apply deriv_ok' in H. 
-    rewrite app_nil_r in H. apply H.
-  - unfold matching. apply nullable_ok. apply deriv_ok'. rewrite app_nil_r.
-    apply H.
+  unfold matching. rewrite nullable_ok, deriv_ok', app_nil_r. firstorder.
  Qed.
 
  (** We can now prove that being in [lang r] is decidable *)
@@ -188,29 +184,15 @@ Qed.
 
  Lemma deriv_epsilon w : In (Epsilon // w) [Void; Epsilon].
  Proof.
-  induction w.
-  - simpl. right. left. reflexivity.
-  - simpl in *. destruct IHw; left; rewrite deriv_void; reflexivity.
+  induction w; simpl in *; firstorder; rewrite deriv_void; firstorder.
  Qed.
 
  Lemma deriv_letter a w :
   In (Letter a // w) [Void; Epsilon; Letter a].
  Proof.
-  induction w.
-  - simpl. right. right. left. reflexivity.
-  - simpl in *.
-    case LetterB.eqb_spec.
-    + intros. firstorder.
-      * induction w. (* TO SIMPLIFY : 4 times the same code! *)
-        ++ simpl. right. left. reflexivity.
-        ++ simpl. left. rewrite deriv_void. reflexivity.
-      * induction w.
-        ++ simpl. right. left. reflexivity.
-        ++ simpl. left. rewrite deriv_void. reflexivity.
-      * induction w.
-        ++ simpl. right. left. reflexivity.
-        ++ simpl. left. rewrite deriv_void. reflexivity.
-    + intros. left. rewrite deriv_void. reflexivity.
+  destruct w; simpl in *; firstorder; case LetterB.eqb_spec; firstorder.
+  - induction w; simpl in *; firstorder; rewrite deriv_void; firstorder.
+  - rewrite deriv_void. firstorder.
   Qed.
 
  Lemma deriv_or r s w :
@@ -281,7 +263,7 @@ Qed.
 
  Lemma or_void_r r : Or r Void === r.
  Proof. firstorder.
-Qed.
+ Qed.
 
  Lemma and_comm r s : And r s === And s r.
  Proof. firstorder.
@@ -305,56 +287,42 @@ Qed.
 
  Lemma cat_eps_l r : Cat Epsilon r === r.
  Proof.
-  split; intros; simpl in *.
-  - apply Lang.cat_eps_l with (L:=lang r) in H. apply H.
-  - apply Lang.cat_eps_l. apply H.
+  apply Lang.cat_eps_l.
  Qed.
 
  Lemma cat_eps_r r : Cat r Epsilon === r.
  Proof.
-  split; intros; simpl in *.
-  - apply Lang.cat_eps_r with (L:= lang r) in H. apply H.
-  - apply Lang.cat_eps_r. apply H.
+  apply Lang.cat_eps_r.
  Qed.
 
  Lemma cat_assoc r s t : Cat (Cat r s ) t === Cat r (Cat s t).
  Proof.
-  split; intros; simpl in *; apply Lang.cat_assoc in H; apply H.
+  apply Lang.cat_assoc.
  Qed.
 
  Lemma star_is_or r : Star r === Or Epsilon (Cat r (Star r)).
  Proof.
-  split; intros; simpl in *.
-  - apply Lang.star_eqn. apply H.
-  - apply Lang.star_eqn in H. apply H.
+  apply Lang.star_eqn.
  Qed.
 
  Lemma star_void : Star Void === Epsilon.
  Proof.
-  split; intros; simpl in *.
-  - apply Lang.star_void. apply H.
-  - apply Lang.star_void in H. apply H.
+  apply Lang.star_void.
  Qed.
 
  Lemma star_epsilon : Star Epsilon === Epsilon.
  Proof.
-    split; intros; simpl in *.
-  - apply Lang.star_eps. apply H.
-  - apply Lang.star_eps in H. apply H.
+  apply Lang.star_eps.
  Qed.
 
  Lemma star_star r : Star (Star r) === Star r.
  Proof.
-    split; intros; simpl in *.
-  - apply Lang.star_star. apply H.
-  - apply Lang.star_star in H. apply H.
+  apply Lang.star_star.
  Qed.
 
  Lemma cat_star r : Cat (Star r) (Star r) === Star r.
  Proof.
-    split; intros; simpl in *.
-  - apply Lang.cat_star. apply H.
-  - apply Lang.cat_star in H. apply H.
+  apply Lang.cat_star.
  Qed.
 
 End Regexps.
