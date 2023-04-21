@@ -64,7 +64,23 @@ Module Regexps (Letter : FiniteOrderedType).
 
  Lemma nullable_ok r : is_nullable r = true <-> lang r [].
  Proof.
- Admitted.
+ Proof.
+  induction r; simpl; firstorder.
+  1-3: discriminate.
+  - apply andb_true_iff in H3. firstorder.
+  - apply andb_true_iff. symmetry in H3. apply app_eq_nil in H3. destruct H3. rewrite H3 in H4. rewrite H6 in H5. firstorder.
+  - exists 0. firstorder.
+  - apply orb_true_iff in H3. firstorder.
+  - apply orb_true_iff. firstorder.
+  - apply orb_true_iff. firstorder.
+  - apply andb_true_iff in H3. firstorder.
+  - apply andb_true_iff in H3. firstorder.
+  - apply andb_true_iff. firstorder.
+  - intro. apply H0 in H2. destruct (is_nullable r) eqn:HH; discriminate.
+  - destruct (is_nullable r) eqn:HH.
+    + apply H1 in H; [destruct H | f_equiv].
+    + f_equiv.
+ Qed.
 
  Lemma nullable_spec r : reflect (lang r []) (is_nullable r).
  Proof.
