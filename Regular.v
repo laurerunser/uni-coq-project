@@ -198,22 +198,26 @@ Qed.
  Lemma deriv_or r s w :
   (Or r s) // w = Or (r//w) (s//w).
  Proof.
- Admitted.
+  revert r s. induction w; simpl in *; firstorder.
+ Qed.
 
  Lemma deriv_and r s w :
   (And r s) // w = And (r // w) (s // w).
  Proof.
- Admitted.
+  revert r s. induction w; simpl in *; firstorder.
+ Qed.
 
  Lemma deriv_not r w :
   (Not r) // w = Not (r // w).
  Proof.
- Admitted.
+  revert r. induction w; simpl in *; firstorder.
+ Qed.
 
  Lemma deriv_app r w w' :
   r // (w++w') = r // w // w'.
  Proof.
- Admitted.
+  revert r w'. induction w; simpl in *; firstorder.
+ Qed.
 
  (** ** Equivalence of regexps *)
 
