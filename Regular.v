@@ -64,7 +64,6 @@ Module Regexps (Letter : FiniteOrderedType).
 
  Lemma nullable_ok r : is_nullable r = true <-> lang r [].
  Proof.
- Proof.
   induction r; simpl; firstorder.
   1-3: discriminate.
   - apply andb_true_iff in H3. firstorder.
@@ -89,7 +88,7 @@ Module Regexps (Letter : FiniteOrderedType).
 
 
  (** ** Derivative of a regular expression **)
- 
+
  Declare Scope re_scope.
  Bind Scope re_scope with re.
  Delimit Scope re_scope with re.
@@ -124,21 +123,38 @@ Module Regexps (Letter : FiniteOrderedType).
 
  Lemma deriv1_ok r a : lang (r/a) == Lang.derivative (lang r) [a].
  Proof.
- Admitted.
+  unfold Lang.derivative. induction r; simpl; red; firstorder.
+  - discriminate H.
+  - revert H. case LetterB.eqb_spec; firstorder. rewrite e,H. f_equiv.
+  - revert H. case LetterB.eqb_spec; firstorder; inversion H; firstorder.
+  - apply IHr1 in H0. exists (a::x0), x1. rewrite <- app_comm_cons. intuition congruence.
+  - revert H. case nullable_spec; firstorder.
+  - case nullable_spec; destruct x0; simpl in *; firstorder.
+    1: rewrite <- H in H1. firstorder.
+    all: injection H; intros; rewrite <- H3 in H0; firstorder.
+  - apply IHr in H0. exists (S x2). exists (a::x0), x1. rewrite <- app_comm_cons. intuition congruence.
+  - revert x H. induction x0; firstorder.
+    + discriminate.
+    + destruct x1; simpl in *.
+      * apply IHx0. congruence.
+      * injection H. intros. rewrite <- H3 in H0. firstorder.
+ Qed.
 
  Lemma deriv_ok r w : lang (r//w) == Lang.derivative (lang r) w.
  Proof.
- Admitted.
+  revert r. induction w; red; firstorder.
+  - apply IHw, deriv1_ok in H. assumption.
+  - apply IHw, deriv1_ok. assumption.
+Qed.
 
  Lemma deriv1_ok' r a w : lang (r/a) w <-> lang r (a::w).
  Proof.
- Admitted.
+  apply deriv1_ok.
+Qed.
 
  Lemma deriv_ok' r w w' : lang (r//w) w' <-> lang r (w++w').
  Proof.
-  split; intros.
-  - induction w; firstorder. apply deriv_ok. apply H.
-  - induction w; firstorder. apply deriv_ok in H. apply H.
+  apply deriv_ok.
  Qed.
 
 (** ** Matching : is a word in the language of a regexp ? *)
@@ -177,7 +193,7 @@ Module Regexps (Letter : FiniteOrderedType).
  Proof.
   induction w.
   - simpl. right. right. left. reflexivity.
-  - simpl in *. 
+  - simpl in *.
     case LetterB.eqb_spec.
     + intros. firstorder.
       * induction w. (* TO SIMPLIFY : 4 times the same code! *)
@@ -283,14 +299,14 @@ Qed.
  Qed.
 
  Lemma cat_eps_l r : Cat Epsilon r === r.
- Proof. 
+ Proof.
   split; intros; simpl in *.
   - apply Lang.cat_eps_l with (L:=lang r) in H. apply H.
   - apply Lang.cat_eps_l. apply H.
  Qed.
 
  Lemma cat_eps_r r : Cat r Epsilon === r.
- Proof. 
+ Proof.
   split; intros; simpl in *.
   - apply Lang.cat_eps_r with (L:= lang r) in H. apply H.
   - apply Lang.cat_eps_r. apply H.
