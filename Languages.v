@@ -111,87 +111,76 @@ Qed.
 
 Lemma cat_eps_l L : ε · L == L.
 Proof.
-  split; intros.
-  - do 3 destruct H. destruct H0. rewrite H0 in H. simpl in H. congruence.
-  - exists [], x. intuition congruence.
+  split; firstorder.
+  - rewrite H0 in H. simpl in H. congruence.
+  - exists [], x. firstorder.
 Qed.
 
 Lemma cat_eps_r L : L · ε == L.
 Proof.
-  split; intros.
-  - do 3 destruct H. destruct H0. red in H1. rewrite H1 in H. rewrite app_nil_r in H. congruence.
-  - exists x, []. rewrite app_nil_r. intuition congruence.
+  split; firstorder.
+  - rewrite H1, app_nil_r in H. congruence.
+  - exists x, []. rewrite app_nil_r. firstorder.
 Qed.
 
 Lemma cat_assoc L1 L2 L3 : (L1 · L2) · L3 == L1 · (L2 · L3).
 Proof.
-  split; intros; do 3 destruct H; destruct H0; [do 3 destruct H0 | do 3 destruct H1]; destruct H2.
-  - exists x2, (x3++x1). intuition.
-    + rewrite app_assoc. congruence.
-    + firstorder.
-  - exists (x0++x2), x3. intuition.
-    + rewrite app_assoc_reverse. congruence.
-    + firstorder.
+  split; firstorder.
+  - exists x2, (x3++x1). rewrite app_assoc. firstorder. congruence.
+  - exists (x0++x2), x3. rewrite app_assoc_reverse. firstorder. congruence.
 Qed.
 
 Lemma star_eqn L : L★ == ε ∪ L · L ★.
 Proof.
-  split; intros.
-  - destruct H, x0; firstorder.
-  - destruct H.
-    + exists 0. assumption.
-    + do 3 destruct H. destruct H0, H1. exists (S x2). firstorder.
+  split; firstorder.
+  - destruct x0; firstorder.
+  - exists 0. assumption.
+  - exists (S x2). firstorder.
 Qed.
 
 Lemma star_void : ∅ ★ == ε.
 Proof.
-  split; intros.
-  - destruct H, x0; firstorder.
+  split; firstorder.
+  - destruct x0; firstorder.
   - exists 0. assumption.
 Qed.
 
 Lemma power_eps n : ε ^ n == ε.
 Proof.
-  split; intros.
-  - induction n.
-    + assumption.
-    + do 3 destruct H. destruct H0. rewrite H0 in H. simpl in H. rewrite <- H in H1. auto.
-  - induction n.
-    + assumption.
-    + exists [], []. intuition congruence.
+  split; induction n; firstorder.
+  - rewrite H0 in H. simpl in H. rewrite <- H in H1. firstorder.
+  - exists [], []. intuition congruence.
 Qed.
 
 Lemma star_eps : ε ★ == ε.
 Proof.
-  split; intros.
-  - destruct H, x0.
-    + assumption.
-    + apply power_eps in H. assumption.
+  split; firstorder.
+  - apply power_eps in H. assumption.
   - exists 0. assumption.
 Qed.
 
 Lemma power_app n m y z L :
  (L^n) y -> (L^m) z -> (L^(n+m)) (y++z).
 Proof.
-  revert m y z. induction n; intros.
-  - rewrite H. auto.
-  - do 3 destruct H. destruct H1. exists x, (x0 ++ z). firstorder. rewrite app_assoc. congruence.
+  revert m y z. induction n; firstorder.
+  - rewrite H. assumption.
+  - exists x, (x0++z). rewrite app_assoc. firstorder. congruence.
 Qed.
 
 Lemma star_star L : (L★)★ == L★.
 Proof.
-  split; intros.
-  - destruct H. revert x H. induction x0; intros.
+  split; firstorder.
+  - revert x H. induction x0; firstorder.
     + exists 0. assumption.
-    + do 3 destruct H. do 2 destruct H0. apply IHx0 in H1. destruct H1. rewrite H. exists (x3+x4). apply power_app with (n:=x3)(m:=x4)(y:=x1)(z:=x2); assumption.
- - exists 1, x, []. rewrite app_nil_r. firstorder.
+    + apply IHx0 in H1. destruct H1. rewrite H. exists (x3+x4). apply power_app; assumption.
+  - exists 1, x, []. rewrite app_nil_r. firstorder.
 Qed.
 
 Lemma cat_star L : (L★)·(L★) == L★.
 Proof.
-  split; intros; destruct H.
-  - do 2 destruct H. do 2 destruct H0. destruct H1. exists (x2 + x3). rewrite H. apply power_app; assumption.
-  -  exists [], x. firstorder. exists 0. firstorder.
+  split; firstorder.
+  - exists (x3+x2). rewrite H. apply power_app; assumption.
+  - exists [], x. firstorder. exists 0. firstorder.
 Qed.
 
 (** ** Derivative of a language : definition **)
@@ -206,40 +195,37 @@ Proof. intros L L' HL w w' <-. unfold derivative. intro. apply HL. Qed.
 Lemma derivative_app L w w' :
   derivative L (w++w') == derivative (derivative L w) w'.
 Proof.
-  unfold derivative. split; intros; [rewrite app_assoc | rewrite <- app_assoc]; assumption.
+  unfold derivative. split; firstorder; [rewrite app_assoc | rewrite <- app_assoc]; assumption.
 Qed.
 
 Lemma derivative_cat_null L L' a : L [] ->
   derivative (L · L') [a] == (derivative L [a] · L') ∪ derivative L' [a].
 Proof.
-  unfold derivative. split; intros; destruct H0.
-  - do 2 destruct H0. destruct H1, x0.
+  unfold derivative. split; firstorder.
+  - destruct x0.
     + right. simpl in *. congruence.
     + left. rewrite <- 2 app_comm_cons in H0. injection H0. intros. rewrite H3, H4. firstorder.
-  - do 2 destruct H0. exists ([a]++x0), x1. rewrite <- app_assoc. intuition congruence.
-  - exists [], ([a]++x). auto.
+  - exists ([a]++x0), x1. rewrite <- app_assoc. intuition congruence.
 Qed.
 
 Lemma derivative_cat_nonnull L L' a : ~L [] ->
   derivative (L · L') [a] == derivative L [a] · L'.
 Proof.
-  unfold derivative. split; intros; do 3 destruct H0; destruct H1.
-  - destruct x0.
-    + contradiction.
-    + rewrite <- 2 app_comm_cons in H0. injection H0. intros. rewrite H3, H4. firstorder.
-  - unfold cat. exists ([a]++x0), x1. rewrite <- app_assoc. intuition congruence.
+  unfold derivative. split; firstorder.
+  - destruct x0; firstorder. rewrite <- 2 app_comm_cons in H0. injection H0. intros. rewrite H3, H4. firstorder.
+  - exists ([a]++x0), x1. rewrite <- app_assoc. intuition congruence.
 Qed.
 
 Lemma derivative_star L a :
   derivative (L★) [a] == (derivative L [a]) · (L★).
 Proof.
-  unfold derivative. split; intro; destruct H.
-  - induction x0.
+  unfold derivative. split; firstorder.
+  - induction x0; firstorder.
     + discriminate.
-    + do 3 destruct H. destruct H0, x1.
+    + destruct x1.
       * simpl in *. rewrite <- H in H1; apply IHx0, H1.
       * rewrite <- 2 app_comm_cons in H. injection H. intros. rewrite H2, H3. firstorder.
-  - do 2 destruct H. destruct H0, H1. exists (S x2), ([a]++x0), x1. rewrite <- app_assoc. intuition congruence.
+  - exists (S x2), ([a]++x0), x1. rewrite <- app_assoc. intuition congruence.
 Qed.
 
 End Lang.
