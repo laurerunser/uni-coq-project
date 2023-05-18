@@ -177,7 +177,7 @@ Qed.
 
 Lemma subset_nil {A} (l : list A) : Subset l [] -> l = [].
 Proof.
-  induction l; firstorder. destruct H with a. intuition.
+  induction l; firstorder. destruct H with a. firstorder.
 Qed.
 
 Lemma incl_subset {A} (l l':list A) : Incl l l' -> Subset l l'.
@@ -199,7 +199,7 @@ Lemma subset_nodup_length {A} (l l' : list A) :
 Proof.
   intros. revert H. revert l'. induction H0; simpl in *; firstorder.
   - lia.
-  - assert (HH: exists l1 l2 : list A, l' = l1 ++ x :: l2). {apply List.in_split. intuition. } firstorder. rewrite H2, app_length. simpl. rewrite Nat.add_succ_r. apply le_n_S. rewrite <- app_length. apply IHNoDup, subset_notin_middle with x.
+  - assert (HH: exists l1 l2 : list A, l' = l1 ++ x :: l2). {apply List.in_split. firstorder. } firstorder. rewrite H2, app_length. simpl. rewrite Nat.add_succ_r. apply le_n_S. rewrite <- app_length. apply IHNoDup, subset_notin_middle with x.
   + rewrite <- H2. firstorder.
   + assumption.
   Qed.
@@ -252,9 +252,9 @@ Lemma subset_nodupA_length l l' :
 Proof using HR.
   intros. revert H. revert l'. induction H0; intros.
   - simpl. lia.
-  - assert (HH: exists (l1 : list A) (y:A) (l2 : list A), R x y /\ l' = l1 ++ y :: l2). { apply InA_split, InModulo_InA, H1. intuition. }
+  - assert (HH: exists (l1 : list A) (y:A) (l2 : list A), R x y /\ l' = l1 ++ y :: l2). { apply InA_split, InModulo_InA, H1. firstorder. }
   destruct HH, H2, H2, H2. rewrite H3, app_length. simpl. rewrite Nat.add_succ_r. apply le_n_S. rewrite <- app_length. apply IHNoDupA, subset_modulo_notin_middle with x1.
-  + rewrite <- H3. intuition.
+  + rewrite <- H3. firstorder.
   + rewrite <- InModulo_InA in H. firstorder.
 Qed.
 
