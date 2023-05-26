@@ -77,29 +77,16 @@ Lemma mixcat_in r r2 l1 l2 :
  exists s l2b,
    canon (Or (Cat s r2) (OR.mk l2b)) = r /\ In s l1 /\ Incl l2b l2.
 Proof.
-  unfold mixcat. split; intros.
-  - apply in_map_iff in H. destruct H, x, H. exists r0, l. apply product_ok in H0. destruct H0. apply sublists_spec in H1. intuition.
-  - destruct H, H, H, H0. apply in_map_iff. exists (x,x0). intuition. apply product_ok. intuition. apply sublists_spec. assumption.
+  unfold mixcat. firstorder.
+  - apply in_map_iff in H. firstorder. destruct x. exists r0, l. apply product_ok in H0. destruct H0. apply sublists_spec in H1. intuition.
+  - apply in_map_iff. exists (x,x0). intuition. apply product_ok. intuition. apply sublists_spec. assumption.
 Qed.
-
 
 Lemma mixcat_stable_1 r r2 l1 l2 : Canonical r ->
  In r l1 ->
  In (sCat r (canon r2)) (mixcat r2 l1 l2).
 Proof.
-  induction r; simpl; intros; apply mixcat_in.
-  - exists Void, []. intuition.
-  - exists Epsilon, []. simpl. intuition. unfold sOr, sCat. case RE.eqb_spec; intuition.
-  - exists (Letter t), []. simpl. intuition. unfold sOr, sCat. case RE.eqb_spec; intuition.
-  - exists (Cat r1 r3), []. simpl. intuition. unfold sOr. simpl. case RE.eqb_spec.
-    + intro. rewrite <- e. f_equiv. apply can_canon_id in H4, H6. rewrite H4, H6. unfold sCat. case RE.eqb_spec; intuition. simpl. case RE.eqb_spec; intuition. case RE.eqb_spec. intro; intuition. case RE.eqb_spec. intro; intuition. intro; intuition.
-    + intro. f_equiv. apply can_canon_id in H4, H6. unfold sCat. case RE.eqb_spec. intro. intuition congruence. intro. simpl. case RE.eqb_spec. intro. intuition congruence. intro. case RE.eqb_spec. intuition congruence. intro. case RE.eqb_spec. intuition congruence. intro. intuition congruence.
-  - exists (Star r), []. simpl. intuition. unfold sOr. simpl. case RE.eqb_spec.
-    + intro. rewrite <- e. f_equiv. unfold sStar. apply can_canon_id in H3. case RE.eqb_spec. intro. intuition congruence. intro. simpl. case RE.eqb_spec. intuition congruence. intuition congruence.
-    + intro. f_equiv. apply can_canon_id in H3. unfold sStar. case RE.eqb_spec. intuition congruence. intro. simpl. case RE.eqb_spec. intuition congruence. intuition congruence.
-  - exists (Or r1 r3), []. simpl. intuition. rewrite sOr_void_r. f_equiv. rewrite <- canon_or with(r:=r1)(s:=r3). apply can_canon_id. simpl. intuition.
-  - exists (And r1 r3), []. simpl. intuition. apply can_canon_id in H2, H4. rewrite sOr_void_r. f_equiv. unfold sAnd. case RE.eqb_spec.  intuition congruence. intro. simpl. case RE.eqb_spec. intuition congruence. intuition congruence.
-  - exists (Not r), []. simpl. intuition. rewrite sOr_void_r. f_equiv. apply can_canon_id in H. intuition congruence.
+  intros. apply mixcat_in. exists r, []. simpl. rewrite sOr_void_r. intuition. f_equal. apply can_canon_id. assumption.
 Qed.
 
 Lemma mixcat_stable_2 r r' r2 l1 l2 : Canonical r' ->
@@ -107,27 +94,6 @@ Lemma mixcat_stable_2 r r' r2 l1 l2 : Canonical r' ->
  In r' l2 ->
  In (sOr r r') (mixcat r2 l1 l2).
 Proof.
-  induction r; simpl; intros; apply mixcat_in; apply mixcat_in in H0; destruct H0, H0.
-  - exists x, [r']. intuition. unfold sOr. case RE.eqb_spec.
-    + apply can_canon_id in H. intro. simpl in *. apply sOr_void in H2.  destruct H2.
-      * rewrite H2. rewrite sOr_void_l. assumption.
-      * apply sCat_can; apply canon_can.
-      * apply canon_can.
-    + intuition.
-    + apply Incl_singleton. assumption.
-  - eexists. eexists. intuition. revert H2. simpl. unfold sOr. case RE.eqb_spec.
-    + unfold sCat. case RE.eqb_spec.
-      * simpl. intro. intro. intro. case RE.eqb_spec.
-        -- case RE.eqb_spec.
-          ++ intro. case RE.eqb_spec.
-            ** intro. case RE.eqb_spec.
-              --- intro. case RE.eqb_spec; rewrite e1 in e3; discriminate.
-              --- intro. case RE.eqb_spec.
-                +++ intro. case RE.eqb_spec; rewrite e2 in e3; discriminate.
-                +++ intro. case RE.eqb_spec.
-                  *** intro. simpl. intro. destruct e4, e0. induction x0.
-                    ---- simpl in H2. discriminate.
-                    ---- apply IHx0.
 Admitted.
 
 Lemma mixcat_gen r1 r2 l1 l2 :
@@ -143,7 +109,10 @@ Lemma mixcat_ok r1 r2 l1 l2 :
  AllDerivsIn r2 l2 ->
  AllDerivsIn (Cat r1 r2) (mixcat r2 l1 l2).
 Proof.
-Admitted.
+  intros. apply mixcat_gen with (r1:=r1) (r2:=r2) (w':=[]) (l1:=l1) (l2:=l2) in H.
+  - simpl in H. assumption.
+  - assumption.
+Qed.
 
 (** Results about [mixstar] *)
 
@@ -152,13 +121,17 @@ Lemma mixstar_in r' r l :
  exists l',
    canon (OR.mk (map (fun s => Cat s (Star r)) l')) = r' /\ Incl l' l.
 Proof.
-Admitted.
+  unfold mixstar. firstorder.
+  - apply in_map_iff in H. destruct H. exists x. intuition. apply  sublists_spec. assumption.
+  - apply in_map_iff. exists x. intuition. apply sublists_spec. assumption.
+Qed.
 
 Lemma mixstar_stable_1 r l r' :
   In (canon r') l ->
   In (canon (Cat r' (Star r))) (mixstar r l).
 Proof.
-Admitted.
+  intros. apply mixstar_in. exists [canon r']. simpl. rewrite canon_canon. intuition. apply Incl_singleton. assumption.
+Qed.
 
 Lemma mixstar_stable_2 r r1 r2 l :
   In r1 (mixstar r l) ->
