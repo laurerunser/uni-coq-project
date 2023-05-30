@@ -46,7 +46,13 @@ Global Hint Constructors sim : core.
 
 Lemma sim_equiv r r' : r =~= r' -> r === r'.
 Proof.
-Admitted.
+  intros. induction H; try firstorder.
+  - rewrite IHsim. reflexivity.
+  - apply cat_eps_l.
+  - apply cat_eps_r.
+  - apply star_void.
+  - apply star_epsilon.
+Qed.
 
 (** Stuff for rewrite *)
 Global Instance sim_equivalence : Equivalence sim.
@@ -470,31 +476,88 @@ Qed.
 
 Lemma canon_sim r : canon r =~= r.
 Proof.
-Admitted.
+  induction r; simpl; try firstorder.
+  - rewrite sCat_sim. apply Cat_compat; assumption.
+  - rewrite sStar_sim. apply Star_compat; assumption.
+  - rewrite sOr_sim. apply Or_compat; assumption.
+  - rewrite sAnd_sim. apply And_compat; assumption.
+Qed.
 
 Lemma canon_can r : Canonical (canon r).
 Proof.
-Admitted.
+  induction r; simpl; try firstorder.
+  - apply sCat_can; assumption.
+  - apply sStar_can. assumption.
+  - apply sOr_can; assumption.
+  - apply sAnd_can; assumption.
+Qed.
 
 Lemma canon_spec r s : r =~= s <-> canon r = canon s.
 Proof.
-Admitted.
+  split; intros.
+  - induction H; simpl; try firstorder.
+    2-4: rewrite IHsim1, IHsim2; reflexivity.
+    2-3: rewrite IHsim; reflexivity.
+    + transitivity (canon s); assumption.
+    + apply sOr_idem, canon_can.
+    + apply sOr_sym; apply canon_can.
+    + apply sOr_assoc; apply canon_can.
+    + unfold sAnd. case RE.eqb; simpl; reflexivity.
+    + unfold sCat. case RE.eqb; simpl; reflexivity.
+    + unfold sCat. case (RE.eqb Epsilon Void) eqn:Hcase; simpl.
+      * rewrite RE.eqb_eq in Hcase. inversion Hcase.
+      * case (RE.eqb (canon r) Void) eqn:Hcase1.
+        -- apply RE.eqb_eq in Hcase1. auto.
+        -- reflexivity.
+    + unfold sCat. case RE.eqb eqn:Hcase; simpl.
+      * rewrite RE.eqb_eq in Hcase. auto.
+      * case (RE.eqb (canon r) Epsilon) eqn:Hcase1.
+        -- rewrite RE.eqb_eq in Hcase1. auto.
+        -- reflexivity.
+  - transitivity (canon s).
+    + rewrite <- H. symmetry. apply canon_sim.
+    + apply canon_sim.
+Qed.
 
 Global Instance : Proper (sim ==> eq) canon.
 Proof. intros r r' Hr. now apply canon_spec. Qed.
 
 Lemma can_canon_id r : Canonical r -> canon r = r.
 Proof.
-Admitted.
+  intro. induction r; simpl; try firstorder.
+  - unfold sCat. case RE.eqb eqn:Hcase; simpl.
+    + rewrite RE.eqb_eq in Hcase. intuition congruence.
+    + case (RE.eqb (canon r2) Void) eqn:Hcase0; simpl.
+      * rewrite RE.eqb_eq in Hcase0. intuition congruence.
+      * case (RE.eqb (canon r1) Epsilon) eqn:Hcase1; simpl.
+        -- rewrite RE.eqb_eq in Hcase1. intuition congruence.
+        -- case (RE.eqb (canon r2) Epsilon) eqn:Hcase2; simpl.
+          ++ rewrite RE.eqb_eq in Hcase2. intuition congruence.
+          ++ congruence.
+  - unfold sStar. case RE.eqb eqn:Hcase; simpl.
+    + rewrite RE.eqb_eq in Hcase. intuition congruence.
+    + case (RE.eqb (canon r) Epsilon) eqn:Hcase0; simpl.
+      * rewrite RE.eqb_eq in Hcase0. intuition congruence.
+      * congruence.
+  - rewrite H5, H6. apply sOr_nop. simpl. intuition.
+  - unfold sAnd. case RE.eqb eqn:Hcase; simpl.
+    + rewrite RE.eqb_eq in Hcase. intuition congruence.
+    + case (RE.eqb (canon r2) Void) eqn:Hcase0; simpl.
+      * rewrite RE.eqb_eq in Hcase0. intuition congruence.
+      * congruence.
+  - congruence.
+Qed.
 
 Lemma canon_canon r : canon (canon r) = canon r.
 Proof.
-Admitted.
+  apply can_canon_id, canon_can.
+Qed.
 
 Lemma can_sim_eq r s :
   Canonical r -> Canonical s -> r =~= s -> r = s.
 Proof.
-Admitted.
+  intros. apply canon_spec in H1. apply can_canon_id in H, H0. rewrite H, H0 in H1. assumption.
+Qed.
 
 (** Decidable test for similarity *)
 
@@ -502,36 +565,60 @@ Definition is_sim r s := RE.eqb (canon r) (canon s).
 
 Definition is_sim_spec r s : is_sim r s = true <-> r =~= s.
 Proof.
-Admitted.
+  unfold is_sim. rewrite RE.eqb_eq. split; intro; apply canon_spec; assumption.
+Qed.
 
 (** Properties of [sim] *)
 
-Global Instance : Proper (sim ==> eq) is_nullable.
+Global Instance sim_is_nullable : Proper (sim ==> eq) is_nullable.
 Proof.
- intros r1 r2 Hr.
-Admitted.
+ intros r1 r2 Hr. induction Hr; simpl; try firstorder.
+ 2-4: rewrite IHHr1, IHHr2; auto.
+ - transitivity (is_nullable s); assumption.
+ - rewrite IHHr. auto.
+ - rewrite orb_diag. auto.
+ - rewrite orb_comm. auto.
+ - rewrite orb_assoc. auto.
+ - rewrite andb_false_r. auto.
+ - rewrite andb_false_r. auto.
+ - rewrite andb_true_r. auto.
+Qed.
 
-Global Instance : Proper (sim ==> eq ==> sim) deriv1.
+Global Instance sim_deriv1 : Proper (sim ==> eq ==> sim) deriv1.
 Proof.
- intros r r' Hr a a' <-.
-Admitted.
+ intros r r' Hr a a' <-. induction Hr; simpl; try firstorder.
+ - transitivity (s / a); assumption.
+ - apply Or_compat.
+  + apply Cat_compat; assumption.
+  + apply sim_is_nullable in Hr1. rewrite Hr1. case (is_nullable r'); auto.
+ - rewrite Cat_void_l, Or_void. reflexivity.
+ - rewrite Cat_void_r, Or_void. case is_nullable; auto.
+ - rewrite Cat_void_l, Or_void. reflexivity.
+ - rewrite Cat_eps_r. case is_nullable; rewrite Or_comm, Or_void; reflexivity.
+Qed.
 
 Lemma canon_deriv1 r a : canon r / a =~= r / a.
 Proof.
-Admitted.
+  apply sim_deriv1.
+  - apply canon_sim.
+  - reflexivity.
+Qed.
 
 Lemma canon_deriv1_canon r a : canon (canon r / a) = canon (r / a).
 Proof.
-Admitted.
+  rewrite canon_deriv1. reflexivity.
+Qed.
 
-Global Instance : Proper (sim ==> eq ==> sim) deriv.
+Global Instance sim_deriv : Proper (sim ==> eq ==> sim) deriv.
 Proof.
- intros r r' Hr w w' <-.
-Admitted.
+ intros r r' Hr w w' <-. rewrite <- (rev_involutive w). induction (rev w); simpl; intros.
+  - assumption.
+  - rewrite 2 deriv_app. simpl. apply sim_deriv1; auto.
+Qed.
 
 Global Instance : Proper (sim ==> eq ==> eq) matching.
 Proof.
- intros r r' Hr w w' <-.
-Admitted.
+ intros r r' Hr w w' <-. unfold matching. apply sim_is_nullable. apply sim_deriv; auto.
+Qed.
 
 End RegSim.
