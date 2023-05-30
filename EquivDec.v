@@ -48,13 +48,17 @@ Definition derivs_equiv_nb r := length (minimal_derivs r).
 Lemma derivs_nb_comparison r :
   derivs_equiv_nb r <= derivs_sim_nb r <= derivs_bound r.
 Proof.
-Admitted.
+  split.
+  - unfold derivs_equiv_nb, derivs_sim_nb. rewrite REs.cardinal_spec. apply Incl_len, removedup_incl.
+  - apply exact_below_bound.
+Qed.
 
 (** [minimal_derivs] has no duplicates up to [equiv] *)
 
 Lemma minimal_derivs_nodup r : NoDupA equiv (minimal_derivs r).
 Proof.
-Admitted.
+  apply removedup_nodup, is_equiv_spec.
+Qed.
 
 (** [minimal_derivs] is an exact list of derivatives up to [equiv] *)
 
