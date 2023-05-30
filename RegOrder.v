@@ -172,7 +172,8 @@ Module RegOrd (Letter : FiniteOrderedType).
 
  Lemma in_or_not r (l:list re) : In r l \/ ~In r l.
  Proof.
- Admitted.
+  assert ({In r l} + {~In r l}). apply List.in_dec. intros. apply REs.E.eq_dec. firstorder.
+ Qed.
 
  (** [remove] : similar to Coq standard [List.remove], but with [RE.eqb]
      instead of a generic [eq_dec] argument. *)
@@ -185,31 +186,63 @@ Module RegOrd (Letter : FiniteOrderedType).
 
  Lemma in_remove x a l : In x (remove a l) <-> In x l /\ a<>x.
  Proof.
- Admitted.
+  induction l; simpl in *; firstorder; case RE.eqb eqn:Hcase; simpl in *; intuition.
+  - subst. rewrite RE.eqb_neq in Hcase. contradiction.
+  - rewrite RE.eqb_eq in Hcase. subst. contradiction.
+ Qed.
 
  Lemma remove_id a l : ~In a l -> remove a l = l.
  Proof.
- Admitted.
+  induction l; simpl in *; firstorder. case RE.eqb eqn:Hcase; simpl in *; intuition.
+  - rewrite RE.eqb_eq in Hcase. symmetry in Hcase. apply H in Hcase. contradiction.
+  - rewrite H1. reflexivity.
+ Qed.
 
  Lemma remove_eqlist a l :
   In a l -> eqlist l (a::remove a l).
  Proof.
- Admitted.
+  intros. unfold eqlist. simpl. split; intros.
+  - destruct (RE.eq_dec a n); intuition. right. apply in_remove. intuition.
+  - destruct H0.
+    + congruence.
+    + apply in_remove in H0. intuition.
+ Qed.
 
  Lemma eqlist_remove a l l' :
   eqlist (a::l) l' -> ~In a l -> eqlist l (remove a l').
  Proof.
- Admitted.
+  split; intros.
+  - apply in_remove. split.
+    + apply H. firstorder.
+    + intro. rewrite <- H2 in H1. contradiction.
+  - apply remove_id in H0. unfold eqlist in H. simpl in H. apply in_remove in H1. destruct H1. apply H in H1. destruct H1; intuition.
+ Qed.
+
+ Lemma eqlist_singl l a : eqlist l [a] -> (forall r:re, In r l -> r = a).
+ Proof.
+  intros. unfold eqlist in H. apply H in H0. simpl in H0. intuition.
+ Qed.
+
+ Lemma remove_singl l a : (forall r:re, In r l -> r = a) -> remove a l = nil.
+ Proof.
+  intros. induction l; simpl.
+  - reflexivity.
+  - case RE.eqb eqn:Hcase; simpl.
+    + rewrite RE.eqb_eq in Hcase. subst. apply IHl. intros. apply H. firstorder.
+    + exfalso. rewrite RE.eqb_neq in Hcase. apply Hcase. destruct H with a0; firstorder.
+ Qed.
 
  Lemma remove_nil a l :
   eqlist l [a] -> remove a l = nil.
  Proof.
- Admitted.
+  intros. apply remove_singl, eqlist_singl. assumption.
+ Qed.
 
  Lemma remove_subset a l l' :
   Subset l (a::l') -> Subset (remove a l) l'.
  Proof.
- Admitted.
+  unfold Subset. intros. apply in_remove in H0. destruct H0. apply H in H0. simpl in H0. intuition.
+ Qed.
 
  (** Thanks to [remove], we can turn a [subset] list into
      an equivalent [Incl] one. Tricky *)
@@ -261,7 +294,10 @@ Module RegOrd (Letter : FiniteOrderedType).
 
  Lemma merge_eqlist l l' : eqlist (merge l l') (l++l').
  Proof.
- Admitted.
+  unfold eqlist, merge. intro. rewrite REs_elements_spec, REs.union_spec. split; intro.
+  - apply in_or_app. destruct H; [left | right]; apply list2set_in; assumption.
+  - apply in_app_or in H. destruct H; [left | right]; apply list2set_in in H; assumption.
+ Qed.
 
  Lemma merge_nonnil l l' : l <> [] -> merge l l' <> [].
  Proof.
